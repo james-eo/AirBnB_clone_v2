@@ -1,87 +1,58 @@
-#sets up web servers for the deployment of web_static using Puppet
+# Puppet manifest to set up nginx web servers for the deployment of web_static
 
-$nginx_conf = "server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    add_header X-Served-By ${hostname};
-    root   /var/www/html;
-    index  index.html index.htm;
-    location /hbnb_static {
-        alias /data/web_static/current;
-        index index.html index.htm;
-    }
-    location /redirect_me {
-        return 301 https://www.youtube.com/;
-    }
-    error_page 404 /404.html;
-    location /404 {
-      root /var/www/html;
-      internal;
-    }
-}"
+# Update package repositories
+exec { 'apt_update':
+  command => '/usr/bin/apt-get update',
+  refreshonly => true,
+}
 
+# Install nginx package
 package { 'nginx':
-  ensure   => 'present',
-  provider => 'apt'
+  ensure => installed,
+  require => Exec['apt_update'],
 }
 
--> file { '/data':
-  ensure  => 'directory'
+# Allow Nginx HTTP through UFW
+exec { 'allow_nginx_http':
+  command => '/usr/sbin/ufw allow "Nginx HTTP"',
+  path => '/usr/sbin',
 }
 
--> file { '/data/web_static':
-  ensure => 'directory'
+# Create necessary directories
+file { ['/data/web_static/shared/', '/data/web_static/releases/test/']:
+  ensure => directory,
 }
 
--> file { '/data/web_static/releases':
-  ensure => 'directory'
+# Create index.html file with content
+file { '/data/web_static/releases/test/index.html':
+  ensure => file,
+  content => "<html>\n  <head>\n  </head>\n  <body>\n    Holberton Schools\n  </body>\n</html>\n",
 }
 
--> file { '/data/web_static/releases/test':
-  ensure => 'directory'
+# Create symbolic link
+file { '/data/web_static/current':
+  ensure => link,
+  target => '/data/web_static/releases/test/',
 }
 
--> file { '/data/web_static/shared':
-  ensure => 'directory'
+# Set ownership recursively
+exec { 'set_ownership':
+  command => '/bin/chown -hR ubuntu:ubuntu /data/',
 }
 
--> file { '/data/web_static/releases/test/index.html':
-  ensure  => 'present',
-  content => "Hoberlton School data/web_static/releases/test/index.htm \n"
+# Update Nginx configuration
+file_line { 'add_hbnb_static_location':
+  path => '/etc/nginx/sites-enabled/default',
+  line => '        location /hbnb_static { alias /data/web_static/current/; }',
+  match => 'listen 80 default_server',
+  ensure => present,
+  require => Package['nginx'],
+  notify => Service['nginx'],
 }
 
--> file { '/data/web_static/current':
-  ensure => 'link',
-  target => '/data/web_static/releases/test'
-}
-
--> exec { 'chown -R ubuntu:ubuntu /data/':
-  path => '/usr/bin/:/usr/local/bin/:/bin/'
-}
-
-file { '/var/www':
-  ensure => 'directory'
-}
-
--> file { '/var/www/html':
-  ensure => 'directory'
-}
-
--> file { '/var/www/html/index.html':
-  ensure  => 'present',
-  content => "This is my first upload  in /var/www/index.html***\n"
-}
-
--> file { '/var/www/html/404.html':
-  ensure  => 'present',
-  content => "Ceci n'est pas une page - Error page\n"
-}
-
--> file { '/etc/nginx/sites-available/default':
-  ensure  => 'present',
-  content => $nginx_conf
-}
-
--> exec { 'nginx restart':
-i  path => '/etc/init.d/'
+# Restart Nginx service
+service { 'nginx':
+  ensure => running,
+  enable => true,
+  require => [Package['nginx'], File_line['add_hbnb_static_location']],
 }
