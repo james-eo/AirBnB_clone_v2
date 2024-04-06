@@ -18,26 +18,45 @@ exec { 'allow_nginx_http':
   path => '/usr/sbin',
 }
 
-# Create necessary directories
-file { ['/data/web_static/shared/', '/data/web_static/releases/test/']:
+# Create necessary directories with correct permissions
+file { '/data':
   ensure => directory,
+  owner => 'ubuntu',
+  group => 'ubuntu',
 }
 
-# Create index.html file with content
+file { '/data/web_static':
+  ensure => directory,
+  owner => 'ubuntu',
+  group => 'ubuntu',
+}
+
+file { '/data/web_static/shared/':
+  ensure => directory,
+  owner => 'ubuntu',
+  group => 'ubuntu',
+}
+
+file { '/data/web_static/releases/test/':
+  ensure => directory,
+  owner => 'ubuntu',
+  group => 'ubuntu',
+}
+
+# Create index.html file with content and correct permissions
 file { '/data/web_static/releases/test/index.html':
   ensure => file,
   content => "<html>\n  <head>\n  </head>\n  <body>\n    Holberton Schools\n  </body>\n</html>\n",
+  owner => 'ubuntu',
+  group => 'ubuntu',
 }
 
-# Create symbolic link
+# Create symbolic link with correct ownership
 file { '/data/web_static/current':
   ensure => link,
   target => '/data/web_static/releases/test/',
-}
-
-# Set ownership recursively
-exec { 'set_ownership':
-  command => '/bin/chown -hR ubuntu:ubuntu /data/',
+  owner => 'ubuntu',
+  group => 'ubuntu',
 }
 
 # Update Nginx configuration
