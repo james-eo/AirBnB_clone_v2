@@ -19,11 +19,16 @@ def display_hbnb():
     """Displays 'HBNB' when accessing the /hbnb route."""
     return "HBNB"
 
-
+@app.route("/c/<text>", strict_slashes=False)
+def display_text(text):
+    """Displays 'C ' followed by processed text"""
+    processed_text = text.replace("_", " ")
+    return f"C {processed_text}"
+'''
 @app.route('/c/<text>', strict_slashes=False)
 def display_c(text):
     """Displays c, followed by the value of the text varaible"""
-    return "c {}".format(text.replace('_', ' '))
+    return "c {}".format(text.replace('_', ' '))'''
 
 
 if __name__ == "__main__":
