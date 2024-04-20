@@ -24,6 +24,8 @@ class DBStorage:
         delete: Deletes from the current database session.
         reload: Creates all tables in the database and creates the current
             database session.
+        close: Optionally closes the current database
+            session (implementation depends on SQLAlchemy version).
     """
 
     __engine = None
@@ -39,7 +41,7 @@ class DBStorage:
                                       pool_pre_ping=True)
         if os.environ.get("HBNB_ENV") == "test":
             Base.metadata.drop_all(self.__engine)
-
+    '''
     def all(self, cls=None):
         """Queries the database.
 
@@ -59,6 +61,25 @@ class DBStorage:
             res.extend(self.__session.query(Review).all())
 
         return {f"{type(obj).__name__}.{obj.id}": obj for obj in res}
+    '''
+
+    def all(self, cls=None):
+        """Queries the database.
+
+        Args:
+            cls (str): The class name to filter. Defaults to None.
+
+        Returns:
+            dict: A dictionary containing queried objects.
+        """
+        if cls is None:
+            # Query all classes using Base model
+            return {f"{type(obj).__name__}.{obj.id}":
+                    obj for obj in self.__session.query(Base).all()}
+        else:
+            # Query specific class using the provided class name
+            return {f"{type(obj).__name__}.{obj.id}":
+                    obj for obj in self.__session.query(cls).all()}
 
     def new(self, obj):
         """add the object to the current database session.
@@ -89,3 +110,7 @@ class DBStorage:
         Base.metadata.create_all(self.__engine)
         db_session = sessionmaker(bind=self.__engine, expire_on_commit=False)
         self.__session = scoped_session(db_session)()
+
+    def close(self):
+        """Closes the DBStorage session."""
+        self.__session.close()

@@ -23,7 +23,8 @@ class State(BaseModel, Base):
         @property
         def cities(self):
             """Returns the list of City instances"""
-            from models import storage, City
+            from models import storage
+            from models.city import City
 
             cities = []
             for city in storage.all(City).values():

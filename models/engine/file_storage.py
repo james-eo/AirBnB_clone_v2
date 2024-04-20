@@ -80,11 +80,15 @@ class FileStorage:
             obj (BaseModel): The object to delete from the storage.
             Defaults to None
         """
-        #try:
+        # try:
         #    del self.__objects[f"{type(obj).__name__}.{obj.id}"]
-        #except Exception:
+        # except Exception:
         #    pass
         if obj is not None:
             key = "{}.{}".format(obj.__class__.__name__, obj.id)
             if key in self.__objects:
                 del self.__objects[key]
+
+    def close(self):
+        """Calls reload method to deserialize JSON file to objects"""
+        self.reload()
