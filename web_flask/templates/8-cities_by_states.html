@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>
 <HTML lang="en">
 	<HEAD>
 		<TITLE>HBNB</TITLE>
@@ -17,4 +17,21 @@
 			{% endfor %}
 		</UL>
 	</BODY>
+</HTML> -->
+
+<!DOCTYPE html>
+<HTML lang="en">
+    <HEAD>
+        <TITLE>HBNB</TITLE>
+    </HEAD>
+    <BODY>
+        {% for state, cities in states.items() %}
+        <H1>{{ state.name }}</H1>
+        <UL>
+            {% for city in cities %}
+            <LI>{{ city.id }}: <B>{{ city.name }}</B></LI>
+            {% endfor %}
+        </UL>
+        {% endfor %}
+    </BODY>
 </HTML>
