@@ -2,12 +2,10 @@
 """ Script to start a Flask web application """
 
 from flask import Flask, render_template
+from models import *
 from models import storage
-from models.state import State
-
 
 app = Flask(__name__)
-app.config['STRICT_SLASHES'] = False
 
 
 @app.route('/states_list', strict_slashes=False)
